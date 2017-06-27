@@ -54,6 +54,8 @@ skipSpaceCheck=false
 reconfigure=false
 runUnattended=false
 
+noInteraction=true
+
 show_ascii_berry() {
   echo "
         .;;,.
@@ -1410,8 +1412,9 @@ main() {
 
 
   if [[ ${useUpdateVars} == false ]]; then
-    # Display welcome dialogs
-    welcomeDialogs
+    if [[ ${noInteraction} == false ]]; then
+      welcomeDialogs # Display welcome dialogs
+    fi
     # Create directory for Pi-hole storage
     mkdir -p /etc/pihole/
 
