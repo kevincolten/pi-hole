@@ -1444,9 +1444,17 @@ main() {
     # Let the user decide if they want to block ads over IPv4 and/or IPv6
     use4andor6
     # Let the user decide if they want the web interface to be installed automatically
-    setAdminFlag
+    if [[ ${noInteraction} == false ]]; then
+      setAdminFlag
+    else
+      INSTALL_WEB=true
+    fi
     # Let the user decide if they want query logging enabled...
-    setLogging
+    if [[ ${noInteraction} == false ]]; then
+      setLogging
+    else
+      QUERY_LOGGING=true
+    fi
     # Clone/Update the repos
     clone_or_update_repos
 
