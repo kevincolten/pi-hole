@@ -363,7 +363,9 @@ useIPv6dialog() {
   fi
 
   if [[ ! -z "${IPV6_ADDRESS}" ]]; then
-    whiptail --msgbox --backtitle "IPv6..." --title "IPv6 Supported" "$IPV6_ADDRESS will be used to block ads." ${r} ${c}
+    if [[ ${noInteraction} == false ]]; then
+      whiptail --msgbox --backtitle "IPv6..." --title "IPv6 Supported" "$IPV6_ADDRESS will be used to block ads." ${r} ${c}
+    fi
   fi
 }
 
