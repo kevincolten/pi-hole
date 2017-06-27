@@ -1426,8 +1426,12 @@ main() {
     get_available_interfaces
     # Find interfaces and let the user choose one
     chooseInterface
-    # Decide what upstream DNS Servers to use
-    setDNS
+    if [[ ${noInteraction} == false ]]; then
+      setDNS # Decide what upstream DNS Servers to use
+    else
+      PIHOLE_DNS_1="8.8.8.8"
+      PIHOLE_DNS_2="8.8.4.4"
+    fi
     # Let the user decide if they want to block ads over IPv4 and/or IPv6
     use4andor6
     # Let the user decide if they want the web interface to be installed automatically
