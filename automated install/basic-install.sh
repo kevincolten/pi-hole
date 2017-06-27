@@ -371,17 +371,22 @@ use4andor6() {
   local useIPv4
   local useIPv6
   # Let use select IPv4 and/or IPv6
-  cmd=(whiptail --separate-output --checklist "Select Protocols (press space to select)" ${r} ${c} 2)
-  options=(IPv4 "Block ads over IPv4" on
-  IPv6 "Block ads over IPv6" on)
-  choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty) || { echo "::: Cancel selected. Exiting"; exit 1; }
-  for choice in ${choices}
-  do
-    case ${choice} in
-    IPv4  )   useIPv4=true;;
-    IPv6  )   useIPv6=true;;
-    esac
-  done
+  if [[ ${noInteraction} == false ]]; then
+    cmd=(whiptail --separate-output --checklist "Select Protocols (press space to select)" ${r} ${c} 2)
+    options=(IPv4 "Block ads over IPv4" on
+    IPv6 "Block ads over IPv6" on)
+    choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty) || { echo "::: Cancel selected. Exiting"; exit 1; }
+    for choice in ${choices}
+    do
+      case ${choice} in
+      IPv4  )   useIPv4=true;;
+      IPv6  )   useIPv6=true;;
+      esac
+    done
+  else
+    useIPv4=true
+    useIPv6=true
+  fi
   if [[ ${useIPv4} ]]; then
     find_IPv4_information
     getStaticIPv4Settings
