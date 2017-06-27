@@ -389,7 +389,9 @@ use4andor6() {
   fi
   if [[ ${useIPv4} ]]; then
     find_IPv4_information
-    getStaticIPv4Settings
+    if [[ ${noInteraction} == false ]]; then
+      getStaticIPv4Settings
+    fi
     setStaticIPv4
   fi
   if [[ ${useIPv6} ]]; then
