@@ -49,13 +49,88 @@ c=$(( columns / 2 ))
 r=$(( r < 20 ? 20 : r ))
 c=$(( c < 70 ? 70 : c ))
 
+
+# DNS servers
+GOOGLE_DNS_1="8.8.8.8"
+GOOGLE_DNS_2="8.8.4.4"
+
+OPENDNS_DNS_1="208.67.222.222"
+OPENDNS_DNS_2="208.67.220.220"
+
+LEVEL3_DNS_1="4.2.2.1"
+LEVEL3_DNS_2="4.2.2.2"
+
+NORTON_DNS_1="199.85.126.10"
+NORTON_DNS_2="199.85.127.10"
+
+COMODO_DNS_1="8.26.56.26"
+COMODO_DNS_2="8.20.247.20"
+
+DNSWATCH_DNS_1="84.200.69.80"
+DNSWATCH_DNS_2="84.200.70.40"
+
+######## Documented Flags ########
+######## Documented Flags ########
+nonInteractive=false
+while getopts np:d: opt; do
+  case $opt in
+    p)
+      # Set Admin Password
+      pw=${OPTARG}
+      ;;
+    n)
+      # Non Interactive Mode
+      nonInteractive=true
+      # Defaulting to using Google DNS servers
+      PIHOLE_DNS_1=${GOOGLE_DNS_1}
+      PIHOLE_DNS_2=${GOOGLE_DNS_2}
+      ;;
+    d)
+      # Choose DNS Servers
+      case $OPTARG in
+        google)
+          echo "::: Using Google DNS servers."  >&2
+          PIHOLE_DNS_1=${GOOGLE_DNS_1}
+          PIHOLE_DNS_2=${GOOGLE_DNS_2}
+          ;;
+        opendns)
+          echo "::: Using OpenDNS servers."  >&2
+          PIHOLE_DNS_1=${OPENDNS_DNS_1}
+          PIHOLE_DNS_2=${OPENDNS_DNS_2}
+          ;;
+        level3)
+          echo "::: Using Level3 servers."  >&2
+          PIHOLE_DNS_1=${LEVEL3_DNS_1}
+          PIHOLE_DNS_2=${LEVEL3_DNS_2}
+          ;;
+        norton)
+          echo "::: Using Norton ConnectSafe servers."  >&2
+          PIHOLE_DNS_1=${NORTON_DNS_1}
+          PIHOLE_DNS_2=${NORTON_DNS_2}
+          ;;
+        comodo)
+          echo "::: Using Comodo Secure servers."  >&2
+          PIHOLE_DNS_1=${COMODO_DNS_1}
+          PIHOLE_DNS_2=${COMODO_DNS_2}
+          ;;
+        dnswatch)
+          echo "::: Using DNS.WATCH servers."  >&2
+          PIHOLE_DNS_1=${DNSWATCH_DNS_1}
+          PIHOLE_DNS_2=${DNSWATCH_DNS_2}
+          ;;
+        *)
+          echo "Option $OPTARG must be [google|opendns|level3|norton|comodo|dnswatch]" >&2
+          exit 1
+          ;;
+      esac
+      ;;
+  esac
+done
+
 ######## Undocumented Flags. Shhh ########
 skipSpaceCheck=false
 reconfigure=false
 runUnattended=false
-
-noInteraction=true
-noInteractionPw=randomPassword
 
 show_ascii_berry() {
   echo "
@@ -364,7 +439,7 @@ useIPv6dialog() {
   fi
 
   if [[ ! -z "${IPV6_ADDRESS}" ]]; then
-    if [[ ${noInteraction} == false ]]; then
+    if [[ ${nonInteractive} == false ]]; then
       whiptail --msgbox --backtitle "IPv6..." --title "IPv6 Supported" "$IPV6_ADDRESS will be used to block ads." ${r} ${c}
     fi
   fi
@@ -374,7 +449,7 @@ use4andor6() {
   local useIPv4
   local useIPv6
   # Let use select IPv4 and/or IPv6
-  if [[ ${noInteraction} == false ]]; then
+  if [[ ${nonInteractive} == false ]]; then
     cmd=(whiptail --separate-output --checklist "Select Protocols (press space to select)" ${r} ${c} 2)
     options=(IPv4 "Block ads over IPv4" on
     IPv6 "Block ads over IPv6" on)
@@ -392,7 +467,7 @@ use4andor6() {
   fi
   if [[ ${useIPv4} ]]; then
     find_IPv4_information
-    if [[ ${noInteraction} == false ]]; then
+    if [[ ${nonInteractive} == false ]]; then
       getStaticIPv4Settings
     fi
     setStaticIPv4
@@ -546,33 +621,33 @@ setDNS() {
   case ${DNSchoices} in
     Google)
       echo "::: Using Google DNS servers."
-      PIHOLE_DNS_1="8.8.8.8"
-      PIHOLE_DNS_2="8.8.4.4"
+      PIHOLE_DNS_1=${GOOGLE_DNS_1}
+      PIHOLE_DNS_2=${GOOGLE_DNS_2}
       ;;
     OpenDNS)
       echo "::: Using OpenDNS servers."
-      PIHOLE_DNS_1="208.67.222.222"
-      PIHOLE_DNS_2="208.67.220.220"
+      PIHOLE_DNS_1=${OPENDNS_DNS_1}
+      PIHOLE_DNS_2=${OPENDNS_DNS_2}
       ;;
     Level3)
       echo "::: Using Level3 servers."
-      PIHOLE_DNS_1="4.2.2.1"
-      PIHOLE_DNS_2="4.2.2.2"
+      PIHOLE_DNS_1=${LEVEL3_DNS_1}
+      PIHOLE_DNS_2=${LEVEL3_DNS_2}
       ;;
     Norton)
       echo "::: Using Norton ConnectSafe servers."
-      PIHOLE_DNS_1="199.85.126.10"
-      PIHOLE_DNS_2="199.85.127.10"
+      PIHOLE_DNS_1=${NORTON_DNS_1}
+      PIHOLE_DNS_2=${NORTON_DNS_2}
       ;;
     Comodo)
       echo "::: Using Comodo Secure servers."
-      PIHOLE_DNS_1="8.26.56.26"
-      PIHOLE_DNS_2="8.20.247.20"
+      PIHOLE_DNS_1=${COMODO_DNS_1}
+      PIHOLE_DNS_2=${COMODO_DNS_2}
       ;;
     DNSWatch)
       echo "::: Using DNS.WATCH servers."
-      PIHOLE_DNS_1="84.200.69.80"
-      PIHOLE_DNS_2="84.200.70.40"
+      PIHOLE_DNS_1=${DNSWATCH_DNS_1}
+      PIHOLE_DNS_2=${DNSWATCH_DNS_2}
       ;;
     Custom)
       until [[ ${DNSSettingsCorrect} = True ]]; do
@@ -1194,7 +1269,7 @@ Your Admin Webpage login password is ${pwstring}"
    fi
 
   # Final completion message to user
-  if [[ ${noInteraction} == false ]]; then
+  if [[ ${nonInteractive} == false ]]; then
     whiptail --msgbox --backtitle "Make it so." --title "Installation Complete!" "Configure your devices to use the Pi-hole as their DNS server using:
 
 IPv4:	${IPV4_ADDRESS%/*}
@@ -1424,7 +1499,7 @@ main() {
 
 
   if [[ ${useUpdateVars} == false ]]; then
-    if [[ ${noInteraction} == false ]]; then
+    if [[ ${nonInteractive} == false ]]; then
       welcomeDialogs # Display welcome dialogs
     fi
     # Create directory for Pi-hole storage
@@ -1438,7 +1513,7 @@ main() {
     get_available_interfaces
     # Find interfaces and let the user choose one
     chooseInterface
-    if [[ ${noInteraction} == false ]]; then
+    if [[ ${nonInteractive} == false ]]; then
       setDNS # Decide what upstream DNS Servers to use
     else
       PIHOLE_DNS_1="8.8.8.8"
@@ -1447,13 +1522,13 @@ main() {
     # Let the user decide if they want to block ads over IPv4 and/or IPv6
     use4andor6
     # Let the user decide if they want the web interface to be installed automatically
-    if [[ ${noInteraction} == false ]]; then
+    if [[ ${nonInteractive} == false ]]; then
       setAdminFlag
     else
       INSTALL_WEB=true
     fi
     # Let the user decide if they want query logging enabled...
-    if [[ ${noInteraction} == false ]]; then
+    if [[ ${nonInteractive} == false ]]; then
       setLogging
     else
       QUERY_LOGGING=true
@@ -1495,15 +1570,10 @@ main() {
 
   if [[ ${INSTALL_WEB} == true ]]; then
     # Add password to web UI if there is none
-    pw=""
     if [[ $(grep 'WEBPASSWORD' -c /etc/pihole/setupVars.conf) == 0 ]] ; then
-      if [[ ${noInteraction} == false ]]; then
-        pw=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
-      else
-        pw=${noInteractionPw}
-      fi
-        . /opt/pihole/webpage.sh
-        echo "WEBPASSWORD=$(HashPassword ${pw})" >> ${setupVars}
+      if [ -z ${pw+x} ]; then pw=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8); fi
+      . /opt/pihole/webpage.sh
+      echo "WEBPASSWORD=$(HashPassword ${pw})" >> ${setupVars}
     fi
   fi
 
