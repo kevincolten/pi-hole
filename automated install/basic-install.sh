@@ -55,6 +55,7 @@ reconfigure=false
 runUnattended=false
 
 noInteraction=true
+noInteractionPw=randomPassword
 
 show_ascii_berry() {
   echo "
@@ -1193,7 +1194,8 @@ Your Admin Webpage login password is ${pwstring}"
    fi
 
   # Final completion message to user
-  whiptail --msgbox --backtitle "Make it so." --title "Installation Complete!" "Configure your devices to use the Pi-hole as their DNS server using:
+  if [[ ${noInteraction} == false ]]; then
+    whiptail --msgbox --backtitle "Make it so." --title "Installation Complete!" "Configure your devices to use the Pi-hole as their DNS server using:
 
 IPv4:	${IPV4_ADDRESS%/*}
 IPv6:	${IPV6_ADDRESS:-"Not Configured"}
@@ -1203,6 +1205,7 @@ If you set a new IP address, you should restart the Pi.
 The install log is in /etc/pihole.
 
 ${additional}" ${r} ${c}
+fi
 }
 
 update_dialogs() {
@@ -1494,7 +1497,11 @@ main() {
     # Add password to web UI if there is none
     pw=""
     if [[ $(grep 'WEBPASSWORD' -c /etc/pihole/setupVars.conf) == 0 ]] ; then
+      if [[ ${noInteraction} == false ]]; then
         pw=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
+      else
+        pw=${noInteractionPw}
+      fi
         . /opt/pihole/webpage.sh
         echo "WEBPASSWORD=$(HashPassword ${pw})" >> ${setupVars}
     fi
